@@ -16,7 +16,7 @@ export class RecipesPage implements OnInit {
     this.recipes = this.recipesService.getRecipes();
   }
 
-  navigateTo(recipeId: number) {
+  navigateTo(recipeId: string) {
     console.log('Navigate to: ', recipeId);
   }
 }
