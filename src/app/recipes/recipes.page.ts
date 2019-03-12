@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { RecipesService } from './recipes.service';
 import { Recipe } from './recipe.model';
 
 @Component({
@@ -9,30 +10,13 @@ import { Recipe } from './recipe.model';
 export class RecipesPage implements OnInit {
   recipes: Recipe[];
 
-  constructor() {}
+  constructor(private recipesService: RecipesService) {}
 
   ngOnInit() {
-    this.recipes = [
-      {
-        id: '1',
-        title: "Jamie's One Pan Bastard",
-        imageUrl:
-          'https://img.jamieoliver.com/jamieoliver/recipe-database/xtra_med/64975476.jpg?tr=w-400',
-        ingredients: [
-          'black beans',
-          'chipolatas',
-          'onion',
-          'garlic',
-          'cherry tomatoes'
-        ]
-      },
-      {
-        id: '2',
-        title: 'Spag Bol',
-        imageUrl:
-          'https://img.jamieoliver.com/jamieoliver/recipe-database/xtra_med/58419467.jpg?tr=w-400',
-        ingredients: ['tomatos', 'mince meat', 'spaghetti', 'parmesan']
-      }
-    ];
+    this.recipes = this.recipesService.getRecipes();
+  }
+
+  navigateTo(recipeId: number) {
+    console.log('Navigate to: ', recipeId);
   }
 }
