@@ -1,5 +1,7 @@
 {
   "name": "Ionicly",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "angular"
 }
