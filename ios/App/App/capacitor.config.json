@@ -1,0 +1,6 @@
+{
+  "appId": "com.ionicly.start",
+  "appName": "Ionicly",
+  "bundledWebRuntime": false,
+  "webDir": "www"
+}
