@@ -20,7 +20,7 @@ export class EditOfferPage implements OnInit {
 
   ngOnInit() {
     this.route.paramMap.subscribe(paramMap => {
-      if (!paramMap) {
+      if (!paramMap.has('placeId')) {
         this.navCtrl.navigateBack('/places/tabs/offers');
       }
       const placeId = paramMap.get('placeId');
