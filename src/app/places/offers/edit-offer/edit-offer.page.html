@@ -3,8 +3,21 @@
     <ion-buttons>
       <ion-back-button defaultHref="/places/tabs/offers"></ion-back-button>
     </ion-buttons>
-    <ion-title>Edit Offer</ion-title>
+    <ion-title>Edit</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding> </ion-content>
+<ion-content padding>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-sm="8" offset-sm="2">
+        <ion-list>
+          <ion-img [src]="offer.imageUrl"></ion-img>
+          <ion-item>{{ offer.title }}</ion-item>
+          <ion-item>{{ offer.description }}</ion-item>
+          <ion-item>{{ offer.price }}</ion-item>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
