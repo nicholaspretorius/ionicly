@@ -24,7 +24,7 @@ export class EditOfferPage implements OnInit {
         this.navCtrl.navigateBack('/places/tabs/offers');
       }
       const placeId = paramMap.get('placeId');
-      this.offer = this.placesService.places.find(place => place.id === placeId);
+      this.offer = this.placesService.getPlace(placeId);
     });
   }
 }

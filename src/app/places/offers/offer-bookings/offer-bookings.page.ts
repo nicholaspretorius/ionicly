@@ -22,9 +22,10 @@ export class OfferBookingsPage implements OnInit {
     this.route.paramMap.subscribe(paramMap => {
       if (!paramMap) {
         this.navCtrl.navigateBack('/places/tabs/offers');
+        return;
       }
       const placeId = paramMap.get('placeId');
-      this.offer = this.placesService.places.find(place => place.id === placeId);
+      this.offer = this.placesService.getPlace(placeId);
     });
   }
 }
