@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NavController, ModalController } from '@ionic/angular';
+import { NavController, ModalController, ActionSheetController } from '@ionic/angular';
 import { PlacesService } from '../../places.service';
 import { Place } from '../../place.model';
 import { CreateBookingsComponent } from '../../../bookings/create-bookings/create-bookings.component';
@@ -18,7 +18,8 @@ export class PlaceDetailPage implements OnInit {
     private router: Router,
     private navCtrl: NavController,
     private placesService: PlacesService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private actionSheetCtrl: ActionSheetController
   ) {}
 
   ngOnInit() {
@@ -33,10 +34,38 @@ export class PlaceDetailPage implements OnInit {
   }
 
   onBookPlace() {
-    console.log('Book this place!');
     // this.router.navigateByUrl('/places/tabs/discover');
     // this.navCtrl.pop();
     // this.navCtrl.navigateBack('/places/tabs/discover');
+    this.actionSheetCtrl
+      .create({
+        header: 'Choose an action',
+        buttons: [
+          {
+            text: 'Select Date',
+            handler: () => {
+              this.openBookingModal('select');
+            }
+          },
+          {
+            text: 'Random Date',
+            handler: () => {
+              this.openBookingModal('random');
+            }
+          },
+          {
+            text: 'Cancel',
+            role: 'cancel' // destructive
+          }
+        ]
+      })
+      .then(actionEl => {
+        actionEl.present();
+      });
+  }
+
+  openBookingModal(mode: 'select' | 'random') {
+    console.log('Mode: ', mode);
     this.modalCtrl
       .create({
         component: CreateBookingsComponent,
