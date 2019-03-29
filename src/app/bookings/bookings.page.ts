@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BookingsService } from './bookings.service';
 import { Booking } from './booking.model';
+import { IonItemSliding } from '@ionic/angular';
 
 @Component({
   selector: 'app-bookings',
@@ -14,5 +15,10 @@ export class BookingsPage implements OnInit {
 
   ngOnInit() {
     this.bookings = this.bookingsService.bookings;
+  }
+
+  onDelete(bookingId: string, slidingBooking: IonItemSliding) {
+    console.log('Deleting: ', bookingId, slidingBooking);
+    slidingBooking.close();
   }
 }
