@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Place } from 'src/app/places/place.model';
 import { ModalController } from '@ionic/angular';
+import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-create-bookings',
@@ -14,8 +15,8 @@ export class CreateBookingsComponent implements OnInit {
 
   ngOnInit() {}
 
-  onBookPlace() {
-    console.log('Book this place!');
+  onBookPlace(form: NgForm) {
+    console.log(form);
     this.modalCtrl.dismiss({ message: 'This is a dummy booking message' }, 'book');
   }
 

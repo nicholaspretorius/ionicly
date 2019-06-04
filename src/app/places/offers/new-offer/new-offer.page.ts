@@ -7,19 +7,19 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
   styleUrls: ['./new-offer.page.scss']
 })
 export class NewOfferPage implements OnInit {
-  form: FormGroup;
+  newOfferForm: FormGroup;
 
   constructor() {}
 
   ngOnInit() {
-    this.form = new FormGroup({
+    this.newOfferForm = new FormGroup({
       title: new FormControl(null, {
         updateOn: 'blur',
         validators: [Validators.required]
       }),
       description: new FormControl(null, {
         updateOn: 'blur',
-        validators: [Validators.required, Validators.maxLength(140)]
+        validators: [Validators.required, Validators.maxLength(10)]
       }),
       price: new FormControl(null, {
         updateOn: 'blur',
@@ -37,6 +37,9 @@ export class NewOfferPage implements OnInit {
   }
 
   onCreateOffer() {
-    console.log('Create!');
+    if (!this.newOfferForm.valid) {
+      return;
+    }
+    console.log(this.newOfferForm);
   }
 }
