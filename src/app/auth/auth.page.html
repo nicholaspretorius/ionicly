@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Authentication</ion-title>
+    <ion-title>{{ isLogin ? 'Login' : 'Register' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -46,8 +46,13 @@
           <ion-button color="primary" expand="block" type="submit" [disabled]="!loginForm.valid"
             >Login</ion-button
           >
-          <ion-button color="primary" fill="clear" expand="block" type="button"
-            >Register</ion-button
+          <ion-button
+            color="primary"
+            fill="clear"
+            expand="block"
+            type="button"
+            (click)="onSwitchToRegister()"
+            >{{ isLogin ? 'Register' : 'Login' }}</ion-button
           >
         </ion-col>
       </ion-row>
