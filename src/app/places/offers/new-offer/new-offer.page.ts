@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-new-offer',
@@ -7,16 +7,33 @@ import { NgForm } from '@angular/forms';
   styleUrls: ['./new-offer.page.scss']
 })
 export class NewOfferPage implements OnInit {
+  form: FormGroup;
+
   constructor() {}
 
-  ngOnInit() {}
-
-  onSubmit(form: NgForm) {
-    if (!form.valid) {
-      return;
-    }
-
-    console.log('Form: ', form);
+  ngOnInit() {
+    this.form = new FormGroup({
+      title: new FormControl(null, {
+        updateOn: 'blur',
+        validators: [Validators.required]
+      }),
+      description: new FormControl(null, {
+        updateOn: 'blur',
+        validators: [Validators.required, Validators.maxLength(140)]
+      }),
+      price: new FormControl(null, {
+        updateOn: 'blur',
+        validators: [Validators.required, Validators.min(1)]
+      }),
+      dateFrom: new FormControl(null, {
+        updateOn: 'blur',
+        validators: [Validators.required]
+      }),
+      dateTo: new FormControl(null, {
+        updateOn: 'blur',
+        validators: [Validators.required]
+      })
+    });
   }
 
   onCreateOffer() {
