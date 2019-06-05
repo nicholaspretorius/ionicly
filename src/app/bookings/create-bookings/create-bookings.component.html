@@ -12,7 +12,7 @@
   <h1>Book {{ selectedPlace.title }}</h1>
   <p>{{ selectedPlace.description }}</p>
   <ion-grid>
-    <form #form="ngForm" (ngSubmit)="onBookPlace(form)">
+    <form #form="ngForm" (ngSubmit)="onBookPlace()">
       <ion-row>
         <ion-col size-sm="6" offset-sm="3">
           <ion-item>
@@ -54,8 +54,55 @@
         </ion-col>
       </ion-row>
       <ion-row>
+        <ion-col size-sm="3" offset-sm="3">
+          <ion-item>
+            <ion-label position="floating">
+              Arrival
+            </ion-label>
+            <ion-datetime
+              [ngModel]="dateStart"
+              display-format="DD MMMM, YYYY"
+              picker-format="DD MMMM YYYY"
+              [min]="selectedPlace.availableFrom.toISOString()"
+              [max]="selectedPlace.availableTo.toISOString()"
+              name="dateFrom"
+              required
+              #dateFromCtrl="ngModel"
+            ></ion-datetime>
+          </ion-item>
+        </ion-col>
+        <ion-col size-sm="3">
+          <ion-item>
+            <ion-label position="floating">
+              Departure
+            </ion-label>
+            <ion-datetime
+              [ngModel]="dateEnd"
+              display-format="DD MMMM, YYYY"
+              picker-format="DD MMMM YYYY"
+              [min]="dateFromCtrl.value"
+              [max]="selectedPlace.availableTo.toISOString()"
+              name="dateTo"
+              required
+              #dateToCtrl="ngModel"
+            ></ion-datetime>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row *ngIf="incompatibleDates">
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item>
+            Arrival date must not be later than departure date.
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
         <ion-col>
-          <ion-button color="primary" expand="block" type="submit" [disabled]="!form.valid"
+          <ion-button
+            color="primary"
+            expand="block"
+            type="submit"
+            [disabled]="!form.valid || incompatibleDates"
             >Create Booking</ion-button
           >
         </ion-col>
