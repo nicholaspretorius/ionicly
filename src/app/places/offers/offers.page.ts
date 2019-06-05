@@ -18,6 +18,10 @@ export class OffersPage implements OnInit {
     this.offers = this.placesService.places;
   }
 
+  ionViewWillEnter() {
+    this.offers = this.placesService.places;
+  }
+
   onEdit(offerId: string, slidingOffer: IonItemSliding) {
     console.log('Editing: ', offerId, slidingOffer);
     slidingOffer.close();

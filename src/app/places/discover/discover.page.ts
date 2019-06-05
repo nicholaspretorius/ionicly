@@ -18,7 +18,9 @@ export class DiscoverPage implements OnInit {
     this.places = this.placesService.places;
   }
 
-  ionViewWillEnter() {}
+  ionViewWillEnter() {
+    this.places = this.placesService.places;
+  }
 
   navigateTo() {}
 

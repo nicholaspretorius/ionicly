@@ -47,6 +47,9 @@ export class CreateBookingsComponent implements OnInit {
       console.log('Start: ', this.dateStart, ' End: ', this.dateEnd);
     } else {
       this.dateStart = moment(availableFrom).toISOString();
+      this.dateEnd = moment(this.dateStart)
+        .add(1, 'days')
+        .toISOString();
     }
   }
 
@@ -63,8 +66,7 @@ export class CreateBookingsComponent implements OnInit {
       return;
     }
 
-    console.log(this.form.value);
-    this.modalCtrl.dismiss({ message: 'This is a dummy booking message' }, 'book');
+    this.modalCtrl.dismiss(this.form.value, 'book');
   }
 
   onCancel() {
