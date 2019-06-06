@@ -10,7 +10,7 @@ import { LoadingController } from '@ionic/angular';
   styleUrls: ['./new-offer.page.scss']
 })
 export class NewOfferPage implements OnInit {
-  newOfferForm: FormGroup;
+  form: FormGroup;
 
   constructor(
     private placesService: PlacesService,
@@ -19,7 +19,7 @@ export class NewOfferPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.newOfferForm = new FormGroup({
+    this.form = new FormGroup({
       title: new FormControl(null, {
         updateOn: 'blur',
         validators: [Validators.required]
@@ -44,24 +44,24 @@ export class NewOfferPage implements OnInit {
   }
 
   onCreateOffer() {
-    if (!this.newOfferForm.valid) {
+    if (!this.form.valid) {
       return;
     }
 
     this.loadingCtrl.create({ message: 'Creating new place...' }).then(loadingEl => {
       loadingEl.present();
 
-      console.log('onCreateOffer: ', this.newOfferForm.value);
+      console.log('onCreateOffer: ', this.form.value);
       this.placesService
         .createPlace(
-          this.newOfferForm.value.title,
-          this.newOfferForm.value.description,
-          this.newOfferForm.value.price,
-          this.newOfferForm.value.dateFrom,
-          this.newOfferForm.value.dateTo
+          this.form.value.title,
+          this.form.value.description,
+          this.form.value.price,
+          this.form.value.dateFrom,
+          this.form.value.dateTo
         )
         .subscribe(() => {
-          this.newOfferForm.reset();
+          this.form.reset();
           loadingEl.dismiss();
           this.router.navigate(['/places/tabs/offers']);
         });
