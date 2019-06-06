@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { PlacesService } from '../../places.service';
 import { Router } from '@angular/router';
+import { LoadingController } from '@ionic/angular';
 
 @Component({
   selector: 'app-new-offer',
@@ -11,7 +12,11 @@ import { Router } from '@angular/router';
 export class NewOfferPage implements OnInit {
   newOfferForm: FormGroup;
 
-  constructor(private placesService: PlacesService, private router: Router) {}
+  constructor(
+    private placesService: PlacesService,
+    private loadingCtrl: LoadingController,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.newOfferForm = new FormGroup({
@@ -42,17 +47,24 @@ export class NewOfferPage implements OnInit {
     if (!this.newOfferForm.valid) {
       return;
     }
-    console.log('onCreateOffer: ', this.newOfferForm.value);
-    this.placesService.createPlace(
-      this.newOfferForm.value.title,
-      this.newOfferForm.value.description,
-      this.newOfferForm.value.price,
-      this.newOfferForm.value.dateFrom,
-      this.newOfferForm.value.dateTo
-    );
 
-    this.newOfferForm.reset();
+    this.loadingCtrl.create({ message: 'Creating new place...' }).then(loadingEl => {
+      loadingEl.present();
 
-    this.router.navigate(['/places/tabs/offers']);
+      console.log('onCreateOffer: ', this.newOfferForm.value);
+      this.placesService
+        .createPlace(
+          this.newOfferForm.value.title,
+          this.newOfferForm.value.description,
+          this.newOfferForm.value.price,
+          this.newOfferForm.value.dateFrom,
+          this.newOfferForm.value.dateTo
+        )
+        .subscribe(() => {
+          this.newOfferForm.reset();
+          loadingEl.dismiss();
+          this.router.navigate(['/places/tabs/offers']);
+        });
+    });
   }
 }
