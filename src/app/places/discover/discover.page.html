@@ -21,33 +21,38 @@
         </ion-segment>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row *ngIf="bookablePlaces.length > 0">
       <ion-col size="12" size-sm="8" offset-sm="2" text-center>
         <ion-card>
           <ion-card-header>
-            <ion-card-title>{{ places[0].title }}</ion-card-title>
-            <ion-card-subtitle>{{ places[0].price | currency }}</ion-card-subtitle>
+            <ion-card-title>{{ bookablePlaces[0].title }}</ion-card-title>
+            <ion-card-subtitle>{{ bookablePlaces[0].price | currency }}</ion-card-subtitle>
           </ion-card-header>
-          <ion-img [src]="places[0].imageUrl"></ion-img>
+          <ion-img [src]="bookablePlaces[0].imageUrl"></ion-img>
           <ion-card-content>
-            <p>{{ places[0].description }}</p>
+            <p>{{ bookablePlaces[0].description }}</p>
           </ion-card-content>
           <div>
             <ion-button
               fill="clear"
               color="primary"
-              [routerLink]="['/', 'places', 'tabs', 'discover', places[0].id]"
+              [routerLink]="['/', 'places', 'tabs', 'discover', bookablePlaces[0].id]"
               >Info</ion-button
             >
           </div>
         </ion-card>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row *ngIf="!bookablePlaces || bookablePlaces.length === 0">
+      <ion-col size="12" size-sm="8" offset-sm="2" text-center>
+        <p>There are currently no bookable places.</p>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="bookablePlaces.length > 0">
       <ion-col size="12" size-sm="8" offset-sm="2" text-center>
         <ion-list>
           <ion-item
-            *ngFor="let place of places.slice(1)"
+            *ngFor="let place of bookablePlaces.slice(1)"
             [routerLink]="['/', 'places', 'tabs', 'discover', place.id]"
             detail
           >
