@@ -11,6 +11,7 @@ import { Place } from '../../place.model';
 import { CreateBookingsComponent } from '../../../bookings/create-bookings/create-bookings.component';
 import { Subscription } from 'rxjs';
 import { BookingsService } from 'src/app/bookings/bookings.service';
+import { AuthService } from 'src/app/auth/auth.service';
 
 @Component({
   selector: 'app-place-detail',
@@ -19,6 +20,7 @@ import { BookingsService } from 'src/app/bookings/bookings.service';
 })
 export class PlaceDetailPage implements OnInit, OnDestroy {
   place: Place;
+  isBookable = false;
   private placeSub: Subscription;
 
   constructor(
@@ -29,7 +31,8 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
     private modalCtrl: ModalController,
     private actionSheetCtrl: ActionSheetController,
     private bookingsService: BookingsService,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -41,6 +44,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
       const placeId = paramMap.get('placeId');
       this.placeSub = this.placesService.getPlace(placeId).subscribe(place => {
         this.place = place;
+        this.isBookable = this.place.userId !== this.authService.userId;
       });
     });
   }
