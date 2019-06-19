@@ -14,6 +14,7 @@ import { AuthService } from 'src/app/auth/auth.service';
 export class DiscoverPage implements OnInit, OnDestroy {
   places: Place[];
   bookablePlaces: Place[];
+  chosenFilter = 'all';
   menuOpen = false;
   private placesSub: Subscription;
 
@@ -25,8 +26,12 @@ export class DiscoverPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.placesSub = this.placesService.places.subscribe(places => {
-      this.places = places;
-      this.bookablePlaces = this.places;
+      if (this.chosenFilter === 'all') {
+        this.places = places;
+        this.bookablePlaces = this.places;
+      } else {
+        this.bookablePlaces = this.places.filter(place => place.userId !== this.authService.userId);
+      }
     });
   }
 
@@ -49,8 +54,10 @@ export class DiscoverPage implements OnInit, OnDestroy {
 
   onFilter(event: CustomEvent<SegmentChangeEventDetail>) {
     if (event.detail.value === 'all') {
+      this.chosenFilter = 'all';
       this.bookablePlaces = this.places;
     } else {
+      this.chosenFilter = 'bookable';
       this.bookablePlaces = this.places.filter(place => place.userId !== this.authService.userId);
     }
   }

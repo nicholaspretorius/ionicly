@@ -3,6 +3,7 @@ import { Place } from 'src/app/places/place.model';
 import { ModalController } from '@ionic/angular';
 import { NgForm } from '@angular/forms';
 import * as moment from 'moment';
+import { BookingsService } from '../bookings.service';
 
 @Component({
   selector: 'app-create-bookings',
@@ -17,7 +18,7 @@ export class CreateBookingsComponent implements OnInit {
   dateEnd: string;
   incompatibleDates = false;
 
-  constructor(private modalCtrl: ModalController) {}
+  constructor(private modalCtrl: ModalController, private bookingsService: BookingsService) {}
 
   ngOnInit() {
     console.log(this.selectedPlace);
@@ -65,6 +66,17 @@ export class CreateBookingsComponent implements OnInit {
       this.incompatibleDates = true;
       return;
     }
+
+    this.bookingsService.addBooking(
+      this.selectedPlace.id,
+      this.selectedPlace.title,
+      this.selectedPlace.imageUrl,
+      this.form.value.firstName,
+      this.form.value.lastName,
+      this.form.value.numGuests,
+      this.form.value.dateFrom,
+      this.form.value.dateTo
+    );
 
     this.modalCtrl.dismiss(this.form.value, 'book');
   }
