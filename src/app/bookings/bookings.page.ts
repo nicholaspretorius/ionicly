@@ -29,6 +29,7 @@ export class BookingsPage implements OnInit, OnDestroy {
 
   onDelete(bookingId: string, slidingBooking: IonItemSliding) {
     console.log('Deleting: ', bookingId, slidingBooking);
+    this.bookingsService.cancelBooking(bookingId).subscribe();
     slidingBooking.close();
   }
 }
