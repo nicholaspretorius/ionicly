@@ -67,18 +67,18 @@ export class CreateBookingsComponent implements OnInit {
       return;
     }
 
-    this.bookingsService.addBooking(
-      this.selectedPlace.id,
-      this.selectedPlace.title,
-      this.selectedPlace.imageUrl,
-      this.form.value.firstName,
-      this.form.value.lastName,
-      this.form.value.numGuests,
-      this.form.value.dateFrom,
-      this.form.value.dateTo
+    this.modalCtrl.dismiss(
+      {
+        data: {
+          firstName: this.form.value.firstName,
+          lastName: this.form.value.lastName,
+          numGuests: +this.form.value.numGuests,
+          dateFrom: new Date(this.form.value.dateFrom),
+          dateTo: new Date(this.form.value.dateTo)
+        }
+      },
+      'book'
     );
-
-    this.modalCtrl.dismiss(this.form.value, 'book');
   }
 
   onCancel() {

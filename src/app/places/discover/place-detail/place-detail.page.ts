@@ -1,10 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NavController, ModalController, ActionSheetController } from '@ionic/angular';
+import {
+  NavController,
+  ModalController,
+  ActionSheetController,
+  LoadingController
+} from '@ionic/angular';
 import { PlacesService } from '../../places.service';
 import { Place } from '../../place.model';
 import { CreateBookingsComponent } from '../../../bookings/create-bookings/create-bookings.component';
 import { Subscription } from 'rxjs';
+import { BookingsService } from 'src/app/bookings/bookings.service';
 
 @Component({
   selector: 'app-place-detail',
@@ -21,7 +27,9 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
     private placesService: PlacesService,
     private modalCtrl: ModalController,
-    private actionSheetCtrl: ActionSheetController
+    private actionSheetCtrl: ActionSheetController,
+    private bookingsService: BookingsService,
+    private loadingCtrl: LoadingController
   ) {}
 
   ngOnInit() {
@@ -88,7 +96,31 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
       .then(resultData => {
         console.log(resultData.data, resultData.role);
         if (resultData.role === 'book') {
-          console.log('BOOKED!');
+          this.loadingCtrl
+            .create({
+              message: 'Making booking...'
+            })
+            .then(loadingEl => {
+              loadingEl.present();
+              console.log('BOOKED!');
+              const data = resultData.data.data;
+              this.bookingsService
+                .addBooking(
+                  this.place.id,
+                  this.place.title,
+                  this.place.imageUrl,
+                  data.firstName,
+                  data.lastName,
+                  data.numGuests,
+                  data.dateFrom,
+                  data.dateTo
+                )
+                .subscribe(() => {
+                  // this.form.reset();
+                  loadingEl.dismiss();
+                  this.router.navigate(['/bookings']);
+                });
+            });
         }
       });
   }

@@ -3,7 +3,7 @@ import { Booking } from './booking.model';
 import { BehaviorSubject } from 'rxjs';
 import * as uuid from 'uuid/v4';
 import { AuthService } from '../auth/auth.service';
-import { take, tap } from 'rxjs/operators';
+import { take, tap, delay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -47,6 +47,7 @@ export class BookingsService {
     // add new booking to observable
     return this._bookings.pipe(
       take(1),
+      delay(1000),
       tap(bookings => {
         this._bookings.next(bookings.concat(newBooking));
         console.log('Bookings: ', this._bookings);
