@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/places/tabs/offers"></ion-back-button>
     </ion-buttons>
-    <ion-title *ngIf="!isLoading && offer">{{ offer.title }}</ion-title>
+    <ion-title *ngIf="!isLoading && offer">{{ isLoading ? 'Loading...' : offer.title }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
