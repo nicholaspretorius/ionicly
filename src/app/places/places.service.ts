@@ -54,6 +54,7 @@ interface PlaceData {
 })
 export class PlacesService {
   private _places = new BehaviorSubject<Place[]>([]);
+  private URL = 'https://ionicly-8e283.firebaseio.com/places';
 
   constructor(private authService: AuthService, private http: HttpClient) {}
 
@@ -62,43 +63,55 @@ export class PlacesService {
   }
 
   fetchPlaces() {
-    return this.http
-      .get<{ [key: string]: PlaceData }>('https://ionicly-8e283.firebaseio.com/places.json')
-      .pipe(
-        map(res => {
-          const places = [];
-          for (const key in res) {
-            if (res.hasOwnProperty(key)) {
-              places.push(
-                new Place(
-                  key,
-                  res[key].title,
-                  res[key].description,
-                  res[key].imageUrl,
-                  res[key].price,
-                  new Date(res[key].availableFrom),
-                  new Date(res[key].availableTo),
-                  res[key].userId
-                )
-              );
-            }
+    return this.http.get<{ [key: string]: PlaceData }>(this.URL + '.json').pipe(
+      map(res => {
+        const places = [];
+        for (const key in res) {
+          if (res.hasOwnProperty(key)) {
+            places.push(
+              new Place(
+                key,
+                res[key].title,
+                res[key].description,
+                res[key].imageUrl,
+                res[key].price,
+                new Date(res[key].availableFrom),
+                new Date(res[key].availableTo),
+                res[key].userId
+              )
+            );
           }
-          return places;
-          // return [];
-        }),
-        tap(res => {
-          this._places.next(res);
-        })
-      );
+        }
+        return places;
+        // return [];
+      }),
+      tap(res => {
+        this._places.next(res);
+      })
+    );
   }
 
   getPlace(id: string) {
-    return this._places.pipe(
-      take(1),
-      map(places => {
-        return places.find(place => place.id === id);
+    return this.http.get<PlaceData>(`${this.URL}/${id}.json`).pipe(
+      map(place => {
+        return new Place(
+          id,
+          place.title,
+          place.description,
+          place.imageUrl,
+          place.price,
+          new Date(place.availableFrom),
+          new Date(place.availableTo),
+          place.userId
+        );
       })
     );
+    // return this._places.pipe(
+    //   take(1),
+    //   map(places => {
+    //     return places.find(place => place.id === id);
+    //   })
+    // );
     // return { ...this._places.find(place => place.id === id) };
   }
 
@@ -126,7 +139,7 @@ export class PlacesService {
 
     // POST newPlace with a null id so that Firebase generates its own id.
     return this.http
-      .post<{ name: string }>('https://ionicly-8e283.firebaseio.com/places.json', {
+      .post<{ name: string }>(this.URL + '.json', {
         ...newPlace,
         id: null
       })
@@ -155,10 +168,10 @@ export class PlacesService {
   }
 
   updatePlace(id: string, title: string, description: string, price: number) {
+    let latestPlaces: Place[];
     return this._places.pipe(
       take(1),
-      delay(1000),
-      tap(places => {
+      switchMap(places => {
         const index = places.findIndex(place => place.id === id);
         const updatedPlaces = [...places];
         const oldPlace = updatedPlaces[index];
@@ -173,7 +186,12 @@ export class PlacesService {
           oldPlace.userId
         );
         updatedPlaces[index] = newPlace;
-        this._places.next(updatedPlaces);
+        latestPlaces = [...updatedPlaces];
+
+        return this.http.put(`${this.URL}/${id}.json`, { ...newPlace, id: null });
+      }),
+      tap(() => {
+        this._places.next(latestPlaces);
       })
     );
   }

@@ -12,6 +12,8 @@ import { Subscription } from 'rxjs';
 })
 export class OfferBookingsPage implements OnInit, OnDestroy {
   offer: Place;
+  placeId: string;
+  isLoading = false;
   private placeSub: Subscription;
 
   constructor(
@@ -26,9 +28,11 @@ export class OfferBookingsPage implements OnInit, OnDestroy {
         this.navCtrl.navigateBack('/places/tabs/offers');
         return;
       }
-      const placeId = paramMap.get('placeId');
-      this.placeSub = this.placesService.getPlace(placeId).subscribe(place => {
+      this.isLoading = true;
+      this.placeId = paramMap.get('placeId');
+      this.placeSub = this.placesService.getPlace(this.placeId).subscribe(place => {
         this.offer = place;
+        this.isLoading = false;
       });
     });
   }

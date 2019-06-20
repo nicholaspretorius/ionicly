@@ -21,6 +21,7 @@ import { AuthService } from 'src/app/auth/auth.service';
 export class PlaceDetailPage implements OnInit, OnDestroy {
   place: Place;
   isBookable = false;
+  isLoading = false;
   private placeSub: Subscription;
 
   constructor(
@@ -41,10 +42,17 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         this.navCtrl.navigateBack('/places/tabs/offers');
         return;
       }
+      this.isLoading = true;
       const placeId = paramMap.get('placeId');
-      this.placeSub = this.placesService.getPlace(placeId).subscribe(place => {
-        this.place = place;
-        this.isBookable = this.place.userId !== this.authService.userId;
+      this.loadingCtrl.create({ message: 'Loading place...' }).then(loadingEl => {
+        loadingEl.present();
+
+        this.placeSub = this.placesService.getPlace(placeId).subscribe(place => {
+          this.place = place;
+          this.isBookable = this.place.userId !== this.authService.userId;
+          loadingEl.dismiss();
+          this.isLoading = false;
+        });
       });
     });
   }

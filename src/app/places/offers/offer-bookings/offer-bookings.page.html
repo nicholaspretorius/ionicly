@@ -3,15 +3,43 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/places/tabs/offers"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ offer.title }}</ion-title>
+    <ion-title *ngIf="!isLoading && offer">{{ offer.title }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
-  <ion-button
-    margin
-    color="primary"
-    [routerLink]="['/', 'places', 'tabs', 'offers', offer.id, 'edit']"
-    >Edit</ion-button
-  >
+<ion-content no-padding>
+  <ion-grid *ngIf="isLoading">
+    <ion-row>
+      <ion-col>
+        <ion-spinner color="primary"></ion-spinner>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-grid no-padding *ngIf="!isLoading && offer">
+    <ion-row>
+      <ion-col no-padding>
+        <ion-img [src]="offer.imageUrl"></ion-img>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size-sm="6" offset-sm="3" text-center padding>
+        {{ offer.description }}
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size-sm="6" offset-sm="3" text-center padding>
+        {{ offer.price }}
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size-sm="6" offset-sm="3" text-center padding>
+        <ion-button
+          margin
+          color="primary"
+          [routerLink]="['/', 'places', 'tabs', 'offers', offer.id, 'edit']"
+          >Edit</ion-button
+        >
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
