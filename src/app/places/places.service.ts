@@ -2,14 +2,11 @@ import { Injectable } from '@angular/core';
 import { Place } from './place.model';
 import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject } from 'rxjs';
-import { take, map, delay, tap } from 'rxjs/operators';
+import { take, map, delay, tap, switchMap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class PlacesService {
-  private _places = new BehaviorSubject<Place[]>([
-    new Place(
+/*
+new Place(
       'p1',
       'Manhattan Mansion',
       'In the heart of New York City.',
@@ -40,12 +37,59 @@ export class PlacesService {
       new Date('2019-12-25'),
       'abc'
     )
-  ]);
+*/
 
-  constructor(private authService: AuthService) {}
+interface PlaceData {
+  availableFrom: string;
+  availableTo: string;
+  description: string;
+  imageUrl: string;
+  price: number;
+  title: string;
+  userId: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PlacesService {
+  private _places = new BehaviorSubject<Place[]>([]);
+
+  constructor(private authService: AuthService, private http: HttpClient) {}
 
   get places() {
     return this._places.asObservable();
+  }
+
+  fetchPlaces() {
+    return this.http
+      .get<{ [key: string]: PlaceData }>('https://ionicly-8e283.firebaseio.com/places.json')
+      .pipe(
+        map(res => {
+          const places = [];
+          for (const key in res) {
+            if (res.hasOwnProperty(key)) {
+              places.push(
+                new Place(
+                  key,
+                  res[key].title,
+                  res[key].description,
+                  res[key].imageUrl,
+                  res[key].price,
+                  new Date(res[key].availableFrom),
+                  new Date(res[key].availableTo),
+                  res[key].userId
+                )
+              );
+            }
+          }
+          return places;
+          // return [];
+        }),
+        tap(res => {
+          this._places.next(res);
+        })
+      );
   }
 
   getPlace(id: string) {
@@ -76,17 +120,38 @@ export class PlacesService {
       this.authService.userId
     );
 
+    let generatedId: string;
+
     console.log('createPlace: ', newPlace);
 
-    // this._places.push(newPlace);
-    return this._places.pipe(
-      take(1),
-      delay(1000),
-      tap(places => {
-        console.log(this._places);
-        this._places.next(places.concat(newPlace));
+    // POST newPlace with a null id so that Firebase generates its own id.
+    return this.http
+      .post<{ name: string }>('https://ionicly-8e283.firebaseio.com/places.json', {
+        ...newPlace,
+        id: null
       })
-    );
+      .pipe(
+        // switchMap "switches" to a new observable, i.e. from the POST response to this.places
+        switchMap(res => {
+          generatedId = res.name;
+          return this.places;
+        }),
+        take(1),
+        tap(places => {
+          newPlace.id = generatedId;
+          this._places.next(places.concat(newPlace));
+        })
+      );
+
+    // this._places.push(newPlace);
+    // return this._places.pipe(
+    //   take(1),
+    //   delay(1000),
+    //   tap(places => {
+    //     console.log(this._places);
+    //     this._places.next(places.concat(newPlace));
+    //   })
+    // );
   }
 
   updatePlace(id: string, title: string, description: string, price: number) {
