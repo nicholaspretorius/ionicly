@@ -85,6 +85,7 @@ export class BookingsService {
       .pipe(
         switchMap(res => {
           console.log('Bookings: ', res);
+          generatedId = res.name;
           return this.bookings;
         }),
         take(1),

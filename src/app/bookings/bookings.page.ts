@@ -11,13 +11,16 @@ import { Subscription } from 'rxjs';
 })
 export class BookingsPage implements OnInit, OnDestroy {
   bookings: Booking[];
+  isLoading = false;
   private bookingsSub: Subscription;
 
   constructor(private bookingsService: BookingsService, private loadingCtrl: LoadingController) {}
 
   ngOnInit() {
-    this.bookingsSub = this.bookingsService.bookings.subscribe(bookings => {
+    this.isLoading = true;
+    this.bookingsSub = this.bookingsService.fetchBookings().subscribe(bookings => {
       this.bookings = bookings;
+      this.isLoading = false;
     });
   }
 
