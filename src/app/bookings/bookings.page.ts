@@ -17,10 +17,8 @@ export class BookingsPage implements OnInit, OnDestroy {
   constructor(private bookingsService: BookingsService, private loadingCtrl: LoadingController) {}
 
   ngOnInit() {
-    this.isLoading = true;
-    this.bookingsSub = this.bookingsService.fetchBookings().subscribe(bookings => {
+    this.bookingsSub = this.bookingsService.bookings.subscribe(bookings => {
       this.bookings = bookings;
-      this.isLoading = false;
     });
   }
 
@@ -28,6 +26,13 @@ export class BookingsPage implements OnInit, OnDestroy {
     if (this.bookingsSub) {
       this.bookingsSub.unsubscribe();
     }
+  }
+
+  ionViewWillEnter() {
+    this.isLoading = true;
+    this.bookingsService.fetchBookings().subscribe(() => {
+      this.isLoading = false;
+    });
   }
 
   onDelete(bookingId: string, slidingBooking: IonItemSliding) {

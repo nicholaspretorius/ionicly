@@ -6,6 +6,18 @@ import { AuthService } from '../auth/auth.service';
 import { take, tap, delay, map, switchMap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 
+interface BookingData {
+  placeId: string;
+  userId: string;
+  placeTitle: string;
+  placeImage: string;
+  firstName: string;
+  lastName: string;
+  numGuests: number;
+  dateFrom: Date;
+  dateTo: Date;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -20,33 +32,37 @@ export class BookingsService {
   }
 
   fetchBookings() {
-    return this.http.get(this.URL + '.json').pipe(
-      map(bookings => {
-        const newBookings = [];
-        for (const key in bookings) {
-          if (bookings.hasOwnProperty(key)) {
-            newBookings.push(
-              new Booking(
-                key,
-                bookings[key].placeId,
-                bookings[key].userId,
-                bookings[key].placeTitle,
-                bookings[key].placeImage,
-                bookings[key].firstName,
-                bookings[key].lastName,
-                bookings[key].numGuests,
-                bookings[key].dateFrom,
-                bookings[key].dateTo
-              )
-            );
+    return this.http
+      .get<{ [key: string]: BookingData }>(
+        this.URL + `.json?orderBy="userId"&equalTo="${this.authService.userId}"`
+      )
+      .pipe(
+        map(bookings => {
+          const newBookings = [];
+          for (const key in bookings) {
+            if (bookings.hasOwnProperty(key)) {
+              newBookings.push(
+                new Booking(
+                  key,
+                  bookings[key].placeId,
+                  bookings[key].userId,
+                  bookings[key].placeTitle,
+                  bookings[key].placeImage,
+                  bookings[key].firstName,
+                  bookings[key].lastName,
+                  bookings[key].numGuests,
+                  bookings[key].dateFrom,
+                  bookings[key].dateTo
+                )
+              );
+            }
           }
-        }
-        return newBookings;
-      }),
-      tap(res => {
-        this._bookings.next(res);
-      })
-    );
+          return newBookings;
+        }),
+        tap(res => {
+          this._bookings.next(res);
+        })
+      );
   }
 
   addBooking(
@@ -106,13 +122,22 @@ export class BookingsService {
   }
 
   cancelBooking(bookingId: string) {
-    return this._bookings.pipe(
+    return this.http.delete(`${this.URL}/${bookingId}.json`).pipe(
+      switchMap(() => {
+        return this.bookings;
+      }),
       take(1),
-      delay(1000),
       tap(bookings => {
         this._bookings.next(bookings.filter(booking => booking.id !== bookingId));
-        console.log('Bookings: ', this._bookings);
       })
     );
+    // return this._bookings.pipe(
+    //   take(1),
+    //   delay(1000),
+    //   tap(bookings => {
+    //     this._bookings.next(bookings.filter(booking => booking.id !== bookingId));
+    //     console.log('Bookings: ', this._bookings);
+    //   })
+    // );
   }
 }
