@@ -20,6 +20,16 @@
       </ion-col>
     </ion-row>
     <ion-row>
+      <ion-col size-sm="6" offset-sm="3" text-center padding>
+        <p>{{ place.location.address }}</p>
+      </ion-col>
+    </ion-row>
+    <ion-row class="location">
+      <ion-col no-padding>
+        <ion-img [src]="place.location.mapShotUrl" role="button" (click)="onShowMap()"></ion-img>
+      </ion-col>
+    </ion-row>
+    <ion-row>
       <ion-col size-sm="6" offset-sm="3" text-center>
         <ion-button color="primary" margin (click)="onBookPlace()" [disabled]="!isBookable"
           >Book</ion-button

@@ -5,7 +5,8 @@ import {
   ViewChild,
   ElementRef,
   Renderer2,
-  OnDestroy
+  OnDestroy,
+  Input
 } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { environment } from '../../../../environments/environment';
@@ -18,6 +19,11 @@ import { environment } from '../../../../environments/environment';
 export class MapsModalComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('map') mapElRef: ElementRef;
 
+  @Input() center = { lat: -34.03, lng: 24.93 };
+  @Input() selectable = true;
+  @Input() closeBtnText = 'Cancel';
+  @Input() title = 'Select Location';
+
   clickListener: any;
   googleMaps: any;
 
@@ -26,7 +32,9 @@ export class MapsModalComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {}
 
   ngOnDestroy() {
-    this.googleMaps.event.removeListener(this.clickListener);
+    if (this.clickListener) {
+      this.googleMaps.event.removeListener(this.clickListener);
+    }
   }
 
   ngAfterViewInit() {
@@ -35,10 +43,7 @@ export class MapsModalComponent implements OnInit, AfterViewInit, OnDestroy {
         this.googleMaps = googleMaps;
         const mapEl = this.mapElRef.nativeElement;
         const map = new googleMaps.Map(mapEl, {
-          center: {
-            lat: -34.03,
-            lng: 24.93
-          },
+          center: this.center,
           zoom: 16
         });
 
@@ -46,14 +51,23 @@ export class MapsModalComponent implements OnInit, AfterViewInit, OnDestroy {
           this.renderer.addClass(mapEl, 'visible');
         });
 
-        this.clickListener = map.addListener('click', event => {
-          const selectedCoords = {
-            lat: event.latLng.lat(),
-            lng: event.latLng.lng()
-          };
+        if (this.selectable) {
+          this.clickListener = map.addListener('click', event => {
+            const selectedCoords = {
+              lat: event.latLng.lat(),
+              lng: event.latLng.lng()
+            };
 
-          this.modalCtrl.dismiss(selectedCoords);
-        });
+            this.modalCtrl.dismiss(selectedCoords);
+          });
+        } else {
+          const marker = new googleMaps.Marker({
+            position: this.center,
+            map: map,
+            title: 'Location'
+          });
+          marker.setMap(map);
+        }
       })
       .catch(err => {
         alert('Error loading Google Maps!');
