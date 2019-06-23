@@ -1,5 +1,6 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Renderer2 } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-maps-modal',
@@ -28,6 +29,15 @@ export class MapsModalComponent implements OnInit, AfterViewInit {
         googleMaps.event.addListenerOnce(map, 'idle', () => {
           this.renderer.addClass(mapEl, 'visible');
         });
+
+        map.addListener('click', event => {
+          const selectedCoords = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng()
+          };
+
+          this.modalCtrl.dismiss(selectedCoords);
+        });
       })
       .catch(err => {
         alert('Error loading Google Maps!');
@@ -48,8 +58,7 @@ export class MapsModalComponent implements OnInit, AfterViewInit {
 
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src =
-        'https://maps.googleapis.com/maps/api/js?key=AIzaSyAPUGN-uNEASUnnPNV6O8RNDHkJN2sq99Y';
+      script.src = 'https://maps.googleapis.com/maps/api/js?key=' + environment.googleMapsAPI;
       script.async = true;
       script.defer = true;
 
