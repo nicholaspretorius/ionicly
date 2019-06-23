@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { ActionSheetController, AlertController } from '@ionic/angular';
-import { Capacitor, Plugins, CameraResultType } from '@capacitor/core';
+import { Capacitor, Plugins, CameraResultType, Camera, CameraSource } from '@capacitor/core';
 
 @Component({
   selector: 'app-image-picker',
@@ -8,6 +8,7 @@ import { Capacitor, Plugins, CameraResultType } from '@capacitor/core';
   styleUrls: ['./image-picker.component.scss']
 })
 export class ImagePickerComponent implements OnInit {
+  @Output() imageSelected = new EventEmitter<string>();
   selectedImage: string;
 
   constructor(private actionSheetCtrl: ActionSheetController, private alertCtrl: AlertController) {}
@@ -63,13 +64,18 @@ export class ImagePickerComponent implements OnInit {
       return;
     }
     Plugins.Camera.getPhoto({
-      quality: 90,
-      resultType: CameraResultType.Uri,
-      allowEditing: false
+      quality: 50,
+      resultType: CameraResultType.Base64,
+      allowEditing: false,
+      correctOrientation: true,
+      source: CameraSource.Prompt,
+      height: 320,
+      width: 200
     })
       .then(data => {
         console.log('Camera: ', data);
-        this.selectedImage = data.webPath;
+        this.selectedImage = data.base64Data;
+        this.imageSelected.emit(this.selectedImage);
       })
       .catch(err => {
         console.log('Camera error: ', err);

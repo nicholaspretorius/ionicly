@@ -78,4 +78,8 @@ export class NewOfferPage implements OnInit {
     console.log('Location Event: ', location);
     this.form.patchValue({ location: location });
   }
+
+  onImageSelected(imageUrl: string) {
+    this.form.patchValue({ imageUrl: imageUrl });
+  }
 }

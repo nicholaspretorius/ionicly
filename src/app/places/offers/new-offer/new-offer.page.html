@@ -74,8 +74,8 @@
         </ion-col>
       </ion-row>
       <ion-row>
-        <ion-col size-sm="3" offset-sm="3">
-          <app-image-picker></app-image-picker>
+        <ion-col size-sm="3" offset-sm="3" text-center>
+          <app-image-picker (imageSelected)="onImageSelected($event)"></app-image-picker>
         </ion-col>
       </ion-row>
     </form>
