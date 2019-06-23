@@ -4,6 +4,7 @@ import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { take, map, delay, tap, switchMap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
+import { PlaceLocation } from './location.model';
 
 /*
 new Place(
@@ -47,6 +48,7 @@ interface PlaceData {
   price: number;
   title: string;
   userId: string;
+  location: PlaceLocation;
 }
 
 @Injectable({
@@ -77,7 +79,8 @@ export class PlacesService {
                 res[key].price,
                 new Date(res[key].availableFrom),
                 new Date(res[key].availableTo),
-                res[key].userId
+                res[key].userId,
+                res[key].location
               )
             );
           }
@@ -102,7 +105,8 @@ export class PlacesService {
           place.price,
           new Date(place.availableFrom),
           new Date(place.availableTo),
-          place.userId
+          place.userId,
+          place.location
         );
       })
     );
@@ -120,7 +124,8 @@ export class PlacesService {
     description: string,
     price: number,
     availableFrom: Date,
-    availableTo: Date
+    availableTo: Date,
+    location: PlaceLocation
   ) {
     const newPlace = new Place(
       Math.round(Math.random() * 100).toString(),
@@ -130,7 +135,8 @@ export class PlacesService {
       price,
       new Date(availableFrom),
       new Date(availableTo),
-      this.authService.userId
+      this.authService.userId,
+      location
     );
 
     let generatedId: string;
@@ -190,7 +196,8 @@ export class PlacesService {
           price,
           oldPlace.availableFrom,
           oldPlace.availableTo,
-          oldPlace.userId
+          oldPlace.userId,
+          oldPlace.location
         );
         updatedPlaces[index] = newPlace;
         latestPlaces = [...updatedPlaces];

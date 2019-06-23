@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { MapsModalComponent } from '../../modals/maps-modal/maps-modal.component';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { map, switchMap, take, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
+import { PlaceLocation } from '../../../places/location.model';
 
 @Component({
   selector: 'app-location-picker',
@@ -11,6 +13,11 @@ import { environment } from '../../../../environments/environment';
   styleUrls: ['./location-picker.component.scss']
 })
 export class LocationPickerComponent implements OnInit {
+  @Output()
+  locationSelected = new EventEmitter<PlaceLocation>();
+
+  pickedLocation: PlaceLocation;
+  isLoading = false;
   constructor(private modalCtrl: ModalController, private http: HttpClient) {}
 
   ngOnInit() {}
@@ -25,9 +32,30 @@ export class LocationPickerComponent implements OnInit {
           alert('No location selected');
           return;
         }
-        this.getAddress(modalData.data.lat, modalData.data.lng).subscribe(res => {
-          console.log('Address: ', res);
-        });
+
+        const placeLocation: PlaceLocation = {
+          lat: modalData.data.lat,
+          lng: modalData.data.lng,
+          address: null,
+          mapShotUrl: null
+        };
+
+        this.isLoading = true;
+        this.getAddress(modalData.data.lat, modalData.data.lng)
+          .pipe(
+            switchMap(res => {
+              placeLocation.address = res;
+              console.log('Address: ', placeLocation);
+              return of(this.getMapShot(placeLocation.lat, placeLocation.lng, 13));
+            })
+          )
+          .subscribe(mapShot => {
+            placeLocation.mapShotUrl = mapShot;
+            this.pickedLocation = placeLocation;
+            this.locationSelected.emit(placeLocation);
+            this.isLoading = false;
+            console.log('Place Location: ', placeLocation);
+          });
       });
     });
   }
@@ -47,5 +75,10 @@ export class LocationPickerComponent implements OnInit {
           return data.results[0].formatted_address;
         })
       );
+  }
+
+  private getMapShot(lat: number, lng: number, zoom: number) {
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=${zoom}&size=600x300&maptype=roadmap
+    &markers=color:blue%7Clabel:Place%7C${lat},${lng}&key=${environment.googleMapsAPI}`;
   }
 }
