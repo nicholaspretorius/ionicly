@@ -58,7 +58,7 @@ export class PlacesService {
   private _places = new BehaviorSubject<Place[]>([]);
   private URL = 'https://ionicly-8e283.firebaseio.com/places';
 
-  constructor(private authService: AuthService, private http: HttpClient) {}
+  constructor(private authService: AuthService, private http: HttpClient) { }
 
   get places() {
     return this._places.asObservable();
@@ -122,6 +122,7 @@ export class PlacesService {
   createPlace(
     title: string,
     description: string,
+    imageUrl: string,
     price: number,
     availableFrom: Date,
     availableTo: Date,
@@ -131,7 +132,7 @@ export class PlacesService {
       Math.round(Math.random() * 100).toString(),
       title,
       description,
-      'https://lonelyplanetimages.imgix.net/mastheads/GettyImages-538096543_medium.jpg?sharp=10&vib=20&w=1200',
+      imageUrl,
       price,
       new Date(availableFrom),
       new Date(availableTo),
@@ -171,6 +172,13 @@ export class PlacesService {
     //     this._places.next(places.concat(newPlace));
     //   })
     // );
+  }
+
+  uploadImage(image: File) {
+    const data = new FormData();
+    data.append('image', image);
+
+    return this.http.post<{ imageUrl: string, imagePath: string }>('https://us-central1-ionicly-8e283.cloudfunctions.net/storeImage', data);
   }
 
   updatePlace(id: string, title: string, description: string, price: number) {

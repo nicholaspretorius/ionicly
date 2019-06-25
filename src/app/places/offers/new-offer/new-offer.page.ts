@@ -4,6 +4,7 @@ import { PlacesService } from '../../places.service';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { PlaceLocation } from '../../location.model';
+import { switchMap } from 'rxjs/operators';
 
 function base64toBlob(base64Data: any, contentType: any) {
   contentType = contentType || '';
@@ -38,7 +39,7 @@ export class NewOfferPage implements OnInit {
     private placesService: PlacesService,
     private loadingCtrl: LoadingController,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.form = new FormGroup({
@@ -71,6 +72,9 @@ export class NewOfferPage implements OnInit {
   }
 
   onCreateOffer() {
+
+    let imageUrl;
+
     if (!this.form.valid || !this.form.get('image').value) {
       return;
     }
@@ -79,14 +83,21 @@ export class NewOfferPage implements OnInit {
       loadingEl.present();
 
       console.log('onCreateOffer: ', this.form.value);
-      this.placesService
-        .createPlace(
-          this.form.value.title,
-          this.form.value.description,
-          this.form.value.price,
-          this.form.value.dateFrom,
-          this.form.value.dateTo,
-          this.form.value.location
+
+      this.placesService.uploadImage(this.form.get('image').value)
+        .pipe(
+          switchMap(data => {
+            return this.placesService
+              .createPlace(
+                this.form.value.title,
+                this.form.value.description,
+                data.imageUrl,
+                this.form.value.price,
+                this.form.value.dateFrom,
+                this.form.value.dateTo,
+                this.form.value.location
+              );
+          })
         )
         .subscribe(() => {
           this.form.reset();
