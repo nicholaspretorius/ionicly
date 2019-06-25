@@ -1,4 +1,12 @@
-import { Component, OnInit, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Output,
+  EventEmitter,
+  ViewChild,
+  ElementRef,
+  Input
+} from '@angular/core';
 import { ActionSheetController, AlertController, Platform } from '@ionic/angular';
 import { Capacitor, Plugins, CameraResultType, Camera, CameraSource } from '@capacitor/core';
 
@@ -14,11 +22,13 @@ export class ImagePickerComponent implements OnInit {
   selectedImage: string;
   useFilePicker = false;
 
+  @Input() showPreview = false;
+
   constructor(
     private actionSheetCtrl: ActionSheetController,
     private alertCtrl: AlertController,
     private platform: Platform
-  ) {}
+  ) { }
 
   ngOnInit() {
     console.log('Mobile? ', this.platform.is('mobile'));

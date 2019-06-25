@@ -1,4 +1,4 @@
-import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input } from '@angular/core';
 import { ModalController, ActionSheetController, AlertController } from '@ionic/angular';
 import { MapsModalComponent } from '../../modals/maps-modal/maps-modal.component';
 import { HttpClient } from '@angular/common/http';
@@ -17,6 +17,8 @@ export class LocationPickerComponent implements OnInit {
   @Output()
   locationSelected = new EventEmitter<PlaceLocation>();
 
+  @Input() showPreview = false;
+
   pickedLocation: PlaceLocation;
   isLoading = false;
   constructor(
@@ -24,9 +26,9 @@ export class LocationPickerComponent implements OnInit {
     private http: HttpClient,
     private actionSheetCtrl: ActionSheetController,
     private alertCtrl: AlertController
-  ) {}
+  ) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   onPickLocation() {
     console.log('Select Location');
@@ -85,7 +87,7 @@ export class LocationPickerComponent implements OnInit {
         header: header ? header : 'Location Geolocation Not Enabled',
         message: message
           ? message
-          : "Please enable geolocation or choose 'Select from Map' instead.",
+          : 'Please enable geolocation or choose \'Select from Map\' instead.',
         buttons: ['OK']
       })
       .then(alertEl => alertEl.present());
@@ -139,7 +141,7 @@ export class LocationPickerComponent implements OnInit {
     return this.http
       .get(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${
-          environment.googleMapsAPI
+        environment.googleMapsAPI
         }`
       )
       .pipe(
