@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { User } from './user.model';
 import { BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 
 export interface AuthResponseData {
   kind: string;
@@ -26,22 +26,28 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   get userIsAuthenticated() {
-    return this._user.asObservable().pipe(map(user => {
-      if (!user) {
-        return false;
-      }
-      return !!user.token;
-    }));
+    return this._user.asObservable().pipe(
+      map(user => {
+        if (user) {
+          return !!user.token;
+        } else {
+          return false;
+        }
+      })
+    );
     // return this._userIsAuthenticated;
   }
 
   get userId() {
-    return this._user.asObservable().pipe(map(user => {
-      if (!user) {
-        return null;
-      }
-      return user.id;
-    }));
+    return this._user.asObservable().pipe(
+      map(user => {
+        if (!user) {
+          return null;
+        } else {
+          return user.id;
+        }
+      })
+    );
     // return this._userId;
   }
 
@@ -52,7 +58,7 @@ export class AuthService {
         email,
         password,
         returnSecureToken: true
-      });
+      }).pipe(tap(this.setUserData.bind(this)));
   }
 
   login(email: string, password: string) {
@@ -62,11 +68,18 @@ export class AuthService {
         email,
         password,
         returnSecureToken: true
-      });
+      }).pipe(tap(this.setUserData.bind(this)));
     // this._userIsAuthenticated = true;
   }
 
   logout() {
+    this._user.next(null);
     // this._userIsAuthenticated = false;
+  }
+
+  private setUserData(data: AuthResponseData) {
+    // expiraiton data is: date now converted into time/getTime (ms) + expiration time (s) * 1000ms
+    const expirationDate = new Date(new Date().getTime() + (+data.expiresIn * 1000));
+    this._user.next(new User(data.localId, data.email, data.idToken, expirationDate));
   }
 }

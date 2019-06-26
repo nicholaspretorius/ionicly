@@ -25,7 +25,7 @@ export class BookingsService {
   private _bookings = new BehaviorSubject<Booking[]>([]);
   private URL = 'https://ionicly-8e283.firebaseio.com/bookings';
 
-  constructor(private authService: AuthService, private http: HttpClient) {}
+  constructor(private authService: AuthService, private http: HttpClient) { }
 
   get bookings() {
     return this._bookings.asObservable();
@@ -76,40 +76,46 @@ export class BookingsService {
     dateTo: Date
   ) {
     const bookingId = uuid();
-    const userId = this.authService.userId;
-    const newBooking = new Booking(
-      bookingId,
-      placeId,
-      userId,
-      placeTitle,
-      placeImage,
-      firstName,
-      lastName,
-      numGuests,
-      dateFrom,
-      dateTo
-    );
-
     let generatedId: string;
-    console.log('Add Booking: ', newBooking);
+    let newBooking: Booking;
+    return this.authService.userId.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('No user id found.');
+        }
 
-    return this.http
-      .post<{ name: string }>(this.URL + '.json', {
-        ...newBooking,
-        id: null
+        newBooking = new Booking(
+          bookingId,
+          placeId,
+          userId,
+          placeTitle,
+          placeImage,
+          firstName,
+          lastName,
+          numGuests,
+          dateFrom,
+          dateTo
+        );
+        console.log('Add Booking: ', newBooking);
+
+        return this.http
+          .post<{ name: string }>(this.URL + '.json', {
+            ...newBooking,
+            id: null
+          });
+      }),
+      switchMap(res => {
+        console.log('Bookings: ', res);
+        generatedId = res.name;
+        return this.bookings;
+      }),
+      take(1),
+      tap(bookings => {
+        newBooking.id = generatedId;
+        this._bookings.next(bookings.concat(newBooking));
       })
-      .pipe(
-        switchMap(res => {
-          console.log('Bookings: ', res);
-          generatedId = res.name;
-          return this.bookings;
-        }),
-        take(1),
-        tap(bookings => {
-          newBooking.id = generatedId;
-          this._bookings.next(bookings.concat(newBooking));
-        })
-      );
+    );
     // add new booking to observable
     // return this._bookings.pipe(
     //   take(1),

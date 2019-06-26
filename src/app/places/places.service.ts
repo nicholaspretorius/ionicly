@@ -128,40 +128,47 @@ export class PlacesService {
     availableTo: Date,
     location: PlaceLocation
   ) {
-    const newPlace = new Place(
-      Math.round(Math.random() * 100).toString(),
-      title,
-      description,
-      imageUrl,
-      price,
-      new Date(availableFrom),
-      new Date(availableTo),
-      this.authService.userId,
-      location
-    );
-
     let generatedId: string;
+    let newPlace: Place;
 
-    console.log('createPlace: ', newPlace);
+    return this.authService.userId.pipe(
+      take(1),
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('No user id found.');
+        }
+        newPlace = new Place(
+          Math.round(Math.random() * 100).toString(),
+          title,
+          description,
+          imageUrl,
+          price,
+          new Date(availableFrom),
+          new Date(availableTo),
+          userId,
+          location
+        );
 
-    // POST newPlace with a null id so that Firebase generates its own id.
-    return this.http
-      .post<{ name: string }>(this.URL + '.json', {
-        ...newPlace,
-        id: null
+        console.log('createPlace: ', newPlace);
+
+        // POST newPlace with a null id so that Firebase generates its own id.
+        return this.http
+          .post<{ name: string }>(this.URL + '.json', {
+            ...newPlace,
+            id: null
+          });
+      }),
+      // switchMap "switches" to a new observable, i.e. from the POST response to this.places
+      switchMap(res => {
+        generatedId = res.name;
+        return this.places;
+      }),
+      take(1),
+      tap(places => {
+        newPlace.id = generatedId;
+        this._places.next(places.concat(newPlace));
       })
-      .pipe(
-        // switchMap "switches" to a new observable, i.e. from the POST response to this.places
-        switchMap(res => {
-          generatedId = res.name;
-          return this.places;
-        }),
-        take(1),
-        tap(places => {
-          newPlace.id = generatedId;
-          this._places.next(places.concat(newPlace));
-        })
-      );
+    );
 
     // this._places.push(newPlace);
     // return this._places.pipe(

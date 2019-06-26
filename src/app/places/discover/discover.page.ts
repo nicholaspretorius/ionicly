@@ -4,6 +4,7 @@ import { Place } from './../place.model';
 import { MenuController, LoadingController } from '@ionic/angular';
 import { SegmentChangeEventDetail } from '@ionic/core';
 import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/auth.service';
 
 @Component({
@@ -24,7 +25,7 @@ export class DiscoverPage implements OnInit, OnDestroy {
     private menuCtrl: MenuController,
     private authService: AuthService,
     private loadingCtrl: LoadingController
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.placesSub = this.placesService.places.subscribe(places => {
@@ -32,7 +33,9 @@ export class DiscoverPage implements OnInit, OnDestroy {
         this.places = places;
         this.bookablePlaces = this.places;
       } else {
-        this.bookablePlaces = this.places.filter(place => place.userId !== this.authService.userId);
+        this.bookablePlaces = this.places.filter(place => {
+          return this.authService.userId.subscribe(userId => place.userId !== userId);
+        });
       }
     });
   }
@@ -55,7 +58,7 @@ export class DiscoverPage implements OnInit, OnDestroy {
     });
   }
 
-  navigateTo() {}
+  navigateTo() { }
 
   onMenuClick() {
     this.menuCtrl.toggle('m1');
@@ -63,12 +66,14 @@ export class DiscoverPage implements OnInit, OnDestroy {
   }
 
   onFilter(event: CustomEvent<SegmentChangeEventDetail>) {
-    if (event.detail.value === 'all') {
-      this.chosenFilter = 'all';
-      this.bookablePlaces = this.places;
-    } else {
-      this.chosenFilter = 'bookable';
-      this.bookablePlaces = this.places.filter(place => place.userId !== this.authService.userId);
-    }
+    this.authService.userId.pipe(take(1)).subscribe(userId => {
+      if (event.detail.value === 'all') {
+        this.chosenFilter = 'all';
+        this.bookablePlaces = this.places;
+      } else {
+        this.chosenFilter = 'bookable';
+        this.bookablePlaces = this.places.filter(place => place.userId !== userId);
+      }
+    });
   }
 }

@@ -14,6 +14,7 @@ import { Subscription } from 'rxjs';
 import { BookingsService } from 'src/app/bookings/bookings.service';
 import { AuthService } from 'src/app/auth/auth.service';
 import { MapsModalComponent } from '../../../shared/modals/maps-modal/maps-modal.component';
+import { take, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-place-detail',
@@ -37,7 +38,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private authService: AuthService,
     private alertCtrl: AlertController
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.route.paramMap.subscribe(paramMap => {
@@ -46,14 +47,23 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         return;
       }
       this.isLoading = true;
+      let retrievedUserId: string;
       const placeId = paramMap.get('placeId');
       this.loadingCtrl.create({ message: 'Loading place...' }).then(loadingEl => {
         loadingEl.present();
 
-        this.placeSub = this.placesService.getPlace(placeId).subscribe(
+        this.placeSub = this.authService.userId.pipe(
+          switchMap(userId => {
+            if (!userId) {
+              throw new Error('No user id found.');
+            }
+            retrievedUserId = userId;
+            return this.placesService.getPlace(placeId);
+          })
+        ).subscribe(
           place => {
             this.place = place;
-            this.isBookable = this.place.userId !== this.authService.userId;
+            this.isBookable = this.place.userId !== retrievedUserId;
             loadingEl.dismiss();
             this.isLoading = false;
           },

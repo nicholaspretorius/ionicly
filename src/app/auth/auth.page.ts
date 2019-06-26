@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { LoadingController, AlertController } from '@ionic/angular';
 import { NgForm } from '@angular/forms';
 import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-auth',
@@ -48,11 +49,11 @@ export class AuthPage implements OnInit {
         loadingEl.present();
         let authObservable: Observable<AuthResponseData>;
         if (this.isLogin) {
-          authObservable = this.authService.login(email, password)
+          authObservable = this.authService.login(email, password);
         } else {
-          authObservable = this.authService.register(email, password)
+          authObservable = this.authService.register(email, password);
         }
-        authObservable.subscribe(data => {
+        authObservable.pipe(take(1)).subscribe(data => {
           console.log(data);
           this.isLoading = false;
           loadingEl.dismiss();
