@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { User } from './user.model';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, from } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
+import { Plugins } from '@capacitor/core';
 
 export interface AuthResponseData {
   kind: string;
@@ -77,9 +78,42 @@ export class AuthService {
     // this._userIsAuthenticated = false;
   }
 
+  autoLogin() {
+    return from(Plugins.Storage.get({ key: 'AuthData' }))
+      .pipe(
+        map(user => {
+          if (!user || !user.value) {
+            return null;
+          }
+
+          const data = JSON.parse(user.value) as { userId: string; email: string; token: string; tokenExpiration: string };
+
+          const expirationTime = new Date(data.tokenExpiration);
+
+          const newUser = new User(data.userId, data.email, data.token, expirationTime);
+
+          return newUser;
+        }), tap(user => {
+          if (user) {
+            this._user.next(user);
+          }
+        }), map(user => {
+          return !!user;
+        })
+      );
+  }
+
   private setUserData(data: AuthResponseData) {
     // expiraiton data is: date now converted into time/getTime (ms) + expiration time (s) * 1000ms
     const expirationDate = new Date(new Date().getTime() + (+data.expiresIn * 1000));
+
+    this.setLocalAuthData(data.localId, data.email, data.idToken, expirationDate.toISOString());
+
     this._user.next(new User(data.localId, data.email, data.idToken, expirationDate));
+  }
+
+  private setLocalAuthData(userId: string, email: string, token: string, tokenExpiration: string) {
+    const authData = JSON.stringify({ userId: userId, email: email, token: token, tokenExpiration: tokenExpiration });
+    Plugins.Storage.set({ key: 'AuthData', value: authData });
   }
 }
