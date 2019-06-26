@@ -32,37 +32,40 @@ export class BookingsService {
   }
 
   fetchBookings() {
-    return this.http
-      .get<{ [key: string]: BookingData }>(
-        this.URL + `.json?orderBy="userId"&equalTo="${this.authService.userId}"`
-      )
-      .pipe(
-        map(bookings => {
-          const newBookings = [];
-          for (const key in bookings) {
-            if (bookings.hasOwnProperty(key)) {
-              newBookings.push(
-                new Booking(
-                  key,
-                  bookings[key].placeId,
-                  bookings[key].userId,
-                  bookings[key].placeTitle,
-                  bookings[key].placeImage,
-                  bookings[key].firstName,
-                  bookings[key].lastName,
-                  bookings[key].numGuests,
-                  bookings[key].dateFrom,
-                  bookings[key].dateTo
-                )
-              );
-            }
+    return this.authService.userId.pipe(
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('No used if found');
+        }
+        return this.http
+          .get<{ [key: string]: BookingData }>(this.URL + `.json?orderBy="userId"&equalTo="${userId}"`)
+      }),
+      map(bookings => {
+        const newBookings = [];
+        for (const key in bookings) {
+          if (bookings.hasOwnProperty(key)) {
+            newBookings.push(
+              new Booking(
+                key,
+                bookings[key].placeId,
+                bookings[key].userId,
+                bookings[key].placeTitle,
+                bookings[key].placeImage,
+                bookings[key].firstName,
+                bookings[key].lastName,
+                bookings[key].numGuests,
+                bookings[key].dateFrom,
+                bookings[key].dateTo
+              )
+            );
           }
-          return newBookings;
-        }),
-        tap(res => {
-          this._bookings.next(res);
-        })
-      );
+        }
+        return newBookings;
+      }),
+      tap(res => {
+        this._bookings.next(res);
+      })
+    );
   }
 
   addBooking(
