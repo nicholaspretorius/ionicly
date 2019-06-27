@@ -35,6 +35,18 @@ export class AuthService implements OnInit, OnDestroy {
     }
   }
 
+  get user() {
+    return this._user.asObservable().pipe(
+      map(user => {
+        if (!user) {
+          return null;
+        } else {
+          return user;
+        }
+      })
+    );
+  }
+
   get userIsAuthenticated() {
     return this._user.asObservable().pipe(
       map(user => {
@@ -59,6 +71,18 @@ export class AuthService implements OnInit, OnDestroy {
       })
     );
     // return this._userId;
+  }
+
+  get token() {
+    return this._user.asObservable().pipe(
+      map(user => {
+        if (!user) {
+          return null;
+        } else {
+          return user.token;
+        }
+      })
+    );
   }
 
   register(email: string, password: string) {

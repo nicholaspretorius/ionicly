@@ -65,8 +65,11 @@ export class PlacesService {
   }
 
   fetchPlaces() {
-    return this.http.get<{ [key: string]: PlaceData }>(this.URL + '.json').pipe(
-      map(res => {
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        return this.http.get<{ [key: string]: PlaceData }>(this.URL + `.json?auth=${token}`);
+      }), map(res => {
         const places = [];
         for (const key in res) {
           if (res.hasOwnProperty(key)) {
@@ -95,8 +98,11 @@ export class PlacesService {
   }
 
   getPlace(id: string) {
-    return this.http.get<PlaceData>(`${this.URL}/${id}.json`).pipe(
-      map(place => {
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        return this.http.get<PlaceData>(`${this.URL}/${id}.json?auth=${token}`);
+      }), map(place => {
         return new Place(
           id,
           place.title,
@@ -129,6 +135,7 @@ export class PlacesService {
     location: PlaceLocation
   ) {
     let generatedId: string;
+    let retrievedId: string;
     let newPlace: Place;
 
     return this.authService.userId.pipe(
@@ -136,6 +143,14 @@ export class PlacesService {
       switchMap(userId => {
         if (!userId) {
           throw new Error('No user id found.');
+        }
+        retrievedId = userId;
+        return this.authService.token;
+      }),
+      take(1),
+      switchMap(token => {
+        if (!token) {
+          throw new Error('No token found.');
         }
         newPlace = new Place(
           Math.round(Math.random() * 100).toString(),
@@ -145,7 +160,7 @@ export class PlacesService {
           price,
           new Date(availableFrom),
           new Date(availableTo),
-          userId,
+          retrievedId,
           location
         );
 
@@ -153,11 +168,12 @@ export class PlacesService {
 
         // POST newPlace with a null id so that Firebase generates its own id.
         return this.http
-          .post<{ name: string }>(this.URL + '.json', {
+          .post<{ name: string }>(this.URL + `.json?auth=${token}`, {
             ...newPlace,
             id: null
           });
       }),
+      take(1),
       // switchMap "switches" to a new observable, i.e. from the POST response to this.places
       switchMap(res => {
         generatedId = res.name;
@@ -185,12 +201,28 @@ export class PlacesService {
     const data = new FormData();
     data.append('image', image);
 
-    return this.http.post<{ imageUrl: string, imagePath: string }>('https://us-central1-ionicly-8e283.cloudfunctions.net/storeImage', data);
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        return this.http.post<{ imageUrl: string, imagePath: string }>(
+          'https://us-central1-ionicly-8e283.cloudfunctions.net/storeImage',
+          data,
+          {
+            headers: { Authorization: 'Bearer ' + token }
+          });
+      })
+    );
   }
 
   updatePlace(id: string, title: string, description: string, price: number) {
     let latestPlaces: Place[];
-    return this._places.pipe(
+    let retrievedToken: string;
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        retrievedToken = token;
+        return this.places;
+      }),
       take(1),
       switchMap(places => {
         if (!places || places.length <= 0) {
@@ -217,7 +249,7 @@ export class PlacesService {
         updatedPlaces[index] = newPlace;
         latestPlaces = [...updatedPlaces];
 
-        return this.http.put(`${this.URL}/${id}.json`, { ...newPlace, id: null });
+        return this.http.put(`${this.URL}/${id}.json?auth=${retrievedToken}`, { ...newPlace, id: null });
       }),
       tap(() => {
         this._places.next(latestPlaces);

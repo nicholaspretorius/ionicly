@@ -32,14 +32,22 @@ export class BookingsService {
   }
 
   fetchBookings() {
-    return this.authService.userId.pipe(
+
+    let retrievedToken: string;
+
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        retrievedToken = token;
+        return this.authService.userId;
+      }),
       take(1),
       switchMap(userId => {
         if (!userId) {
           throw new Error('No used if found');
         }
         return this.http
-          .get<{ [key: string]: BookingData }>(this.URL + `.json?orderBy="userId"&equalTo="${userId}"`)
+          .get<{ [key: string]: BookingData }>(this.URL + `.json?auth=${retrievedToken}&orderBy="userId"&equalTo="${userId}"`);
       }),
       map(bookings => {
         const newBookings = [];
@@ -82,8 +90,14 @@ export class BookingsService {
     const bookingId = uuid();
     let generatedId: string;
     let newBooking: Booking;
-    return this.authService.userId.pipe(
+    let retrievedToken: string;
+
+    return this.authService.token.pipe(
       take(1),
+      switchMap(token => {
+        retrievedToken = token;
+        return this.authService.userId;
+      }), take(1),
       switchMap(userId => {
         if (!userId) {
           throw new Error('No user id found.');
@@ -104,11 +118,12 @@ export class BookingsService {
         console.log('Add Booking: ', newBooking);
 
         return this.http
-          .post<{ name: string }>(this.URL + '.json', {
+          .post<{ name: string }>(this.URL + `.json?auth=${retrievedToken}`, {
             ...newBooking,
             id: null
           });
       }),
+      take(1),
       switchMap(res => {
         console.log('Bookings: ', res);
         generatedId = res.name;
@@ -132,7 +147,12 @@ export class BookingsService {
   }
 
   cancelBooking(bookingId: string) {
-    return this.http.delete(`${this.URL}/${bookingId}.json`).pipe(
+    return this.authService.token.pipe(
+      take(1),
+      switchMap(token => {
+        return this.http.delete(`${this.URL}/${bookingId}.json?auth=${token}`);
+      }),
+      take(1),
       switchMap(() => {
         return this.bookings;
       }),
