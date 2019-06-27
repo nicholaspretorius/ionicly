@@ -89,7 +89,7 @@ export class AuthService {
           const data = JSON.parse(user.value) as { userId: string; email: string; token: string; tokenExpiration: string };
 
           const expirationTime = new Date(data.tokenExpiration);
-
+          console.log('Retrived expiration: ', expirationTime);
           const newUser = new User(data.userId, data.email, data.token, expirationTime);
 
           return newUser;
@@ -98,21 +98,32 @@ export class AuthService {
             this._user.next(user);
           }
         }), map(user => {
-          return !!user;
+          return !!user; // !! turns user into a boolean
         })
       );
   }
 
   private setUserData(data: AuthResponseData) {
+
     // expiraiton data is: date now converted into time/getTime (ms) + expiration time (s) * 1000ms
-    const expirationDate = new Date(new Date().getTime() + (+data.expiresIn * 1000));
+    // const expirationDate = new Date(new Date().getTime() + (+data.expiresIn * 1000));
+    const expiry = +data.expiresIn;
+    const localMs = Date.now();
+    const localOffset = new Date().getTimezoneOffset() * 60000;
+    const expiryTime = expiry * 1000;
+
+    const expirationDate = new Date(localMs - localOffset + expiryTime);
+
+    console.log('Expiration Date: ', expirationDate, expirationDate.toISOString());
 
     this.setLocalAuthData(data.localId, data.email, data.idToken, expirationDate.toISOString());
 
     this._user.next(new User(data.localId, data.email, data.idToken, expirationDate));
   }
 
+  // local storay in Plugins.Storage is a key/value pair as a string.
   private setLocalAuthData(userId: string, email: string, token: string, tokenExpiration: string) {
+    console.log('Expiration String', tokenExpiration);
     const authData = JSON.stringify({ userId: userId, email: email, token: token, tokenExpiration: tokenExpiration });
     Plugins.Storage.set({ key: 'AuthData', value: authData });
   }
