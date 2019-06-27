@@ -19,7 +19,7 @@ export class User {
             return 0;
         }
 
-        return 2000; // for testing autologout on 2s
-        // return this._tokenExpirationDate.getTime() - new Date().getTime();
+        // return 2000; // for testing autologout on 2s
+        return this._tokenExpirationDate.getTime() - new Date().getTime();
     }
 }
