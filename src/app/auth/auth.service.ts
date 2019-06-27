@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { User } from './user.model';
@@ -19,12 +19,21 @@ export interface AuthResponseData {
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
+export class AuthService implements OnInit, OnDestroy {
   // private _userIsAuthenticated = false;
   // private _userId = null; // 'xyz';
   private _user = new BehaviorSubject<User>(null);
+  private activeLogoutTimer: any;
 
   constructor(private http: HttpClient) { }
+
+  ngOnInit() { }
+
+  ngOnDestroy() {
+    if (this.activeLogoutTimer) {
+      clearTimeout(this.activeLogoutTimer);
+    }
+  }
 
   get userIsAuthenticated() {
     return this._user.asObservable().pipe(
@@ -74,9 +83,23 @@ export class AuthService {
   }
 
   logout() {
+    if (this.activeLogoutTimer) {
+      clearTimeout(this.activeLogoutTimer);
+    }
+
     this._user.next(null);
     Plugins.Storage.remove({ key: 'AuthData' });
     // this._userIsAuthenticated = false;
+  }
+
+  private autoLogout(duration: number) {
+    if (this.activeLogoutTimer) {
+      clearTimeout(this.activeLogoutTimer);
+    }
+
+    this.activeLogoutTimer = setTimeout(() => {
+      this.logout();
+    }, duration);
   }
 
   autoLogin() {
@@ -97,6 +120,7 @@ export class AuthService {
         }), tap(user => {
           if (user) {
             this._user.next(user);
+            this.autoLogout(user.tokenDuration);
           }
         }), map(user => {
           return !!user; // !! turns user into a boolean
@@ -107,19 +131,21 @@ export class AuthService {
   private setUserData(data: AuthResponseData) {
 
     // expiraiton data is: date now converted into time/getTime (ms) + expiration time (s) * 1000ms
-    // const expirationDate = new Date(new Date().getTime() + (+data.expiresIn * 1000));
-    const expiry = +data.expiresIn;
-    const localMs = Date.now();
-    const localOffset = new Date().getTimezoneOffset() * 60000;
-    const expiryTime = expiry * 1000;
+    const expirationDate = new Date(new Date().getTime() + (+data.expiresIn * 1000));
+    // const expiry = +data.expiresIn;
+    // const localMs = Date.now();
+    // const localOffset = new Date().getTimezoneOffset() * 60000;
+    // const expiryTime = expiry * 1000;
 
-    const expirationDate = new Date(localMs - localOffset + expiryTime);
+    // const expirationDate = new Date(localMs - localOffset + expiryTime);
 
     console.log('Expiration Date: ', expirationDate, expirationDate.toISOString());
 
-    this.setLocalAuthData(data.localId, data.email, data.idToken, expirationDate.toISOString());
+    const user = new User(data.localId, data.email, data.idToken, expirationDate);
 
-    this._user.next(new User(data.localId, data.email, data.idToken, expirationDate));
+    this._user.next(user);
+    this.autoLogout(user.tokenDuration);
+    this.setLocalAuthData(data.localId, data.email, data.idToken, expirationDate.toISOString());
   }
 
   // local storay in Plugins.Storage is a key/value pair as a string.

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 
 import { Platform } from '@ionic/angular';
 // import { SplashScreen } from '@ionic-native/splash-screen/ngx';
@@ -8,12 +8,17 @@ import { Router } from '@angular/router';
 
 import { Capacitor, Plugins, StatusBarStyle } from '@capacitor/core';
 import { pluginWarn } from '@ionic-native/core/decorators/common';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html'
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
+
+  private authSub: Subscription;
+  private previousAuth = false;
+
   constructor(
     private platform: Platform,
     // private splashScreen: SplashScreen,
@@ -22,6 +27,21 @@ export class AppComponent {
     private router: Router
   ) {
     this.initializeApp();
+  }
+
+  ngOnInit() {
+    this.authSub = this.authService.userIsAuthenticated.subscribe(isAuth => {
+      if (!isAuth && this.previousAuth !== isAuth) {
+        this.router.navigateByUrl('auth');
+      }
+      this.previousAuth = isAuth;
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.authSub) {
+      this.authSub.unsubscribe();
+    }
   }
 
   initializeApp() {
@@ -39,6 +59,5 @@ export class AppComponent {
   onLogout() {
     console.log('Logout');
     this.authService.logout();
-    this.router.navigateByUrl('auth');
   }
 }

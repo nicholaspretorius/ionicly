@@ -13,4 +13,13 @@ export class User {
 
         return this._token;
     }
+
+    get tokenDuration() {
+        if (!this.token) {
+            return 0;
+        }
+
+        return 2000; // for testing autologout on 2s
+        // return this._tokenExpirationDate.getTime() - new Date().getTime();
+    }
 }
