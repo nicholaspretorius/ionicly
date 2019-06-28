@@ -73,8 +73,6 @@ export class NewOfferPage implements OnInit {
 
   onCreateOffer() {
 
-    let imageUrl;
-
     if (!this.form.valid || !this.form.get('image').value) {
       return;
     }
